@@ -9,13 +9,14 @@ public class Snake {
 	private LinkedList<BodySegment> segments;
 	private double deltaX;
 	private double deltaY;
-	
+
 	public Snake() {
-		//FIXME - set up the segments instance variable
+		segments = new LinkedList<>();
+		segments.add(new BodySegment(0.5, 0.5, SEGMENT_SIZE)); // Start in center
 		deltaX = 0;
 		deltaY = 0;
 	}
-	
+
 	public void changeDirection(int direction) {
 		if(direction == 1) { //up
 			deltaY = MOVEMENT_SIZE;
@@ -31,38 +32,57 @@ public class Snake {
 			deltaX = MOVEMENT_SIZE;
 		}
 	}
-	
-	/**
-	 * Moves the snake by updating the position of each of the segments
-	 * based on the current direction of travel
-	 */
+
 	public void move() {
-		//FIXME
+		BodySegment head = segments.getFirst();
+		double newX = head.getX() + deltaX;
+		double newY = head.getY() + deltaY;
+
+		// Move tail segments forward
+		for (int i = segments.size() - 1; i > 0; i--) {
+			BodySegment prev = segments.get(i - 1);
+			segments.get(i).setPosition(prev.getX(), prev.getY());
+		}
+
+		// Move head
+		head.setPosition(newX, newY);
 	}
 	
-	/**
-	 * Draws the snake by drawing each segment
+	/*
+	 * changeDirection maps the latest WASD keystroke to (deltaX, deltaY) steps, 
+	 * and move() first drags every tail segment onto the spot of the segment ahead of it, 
+	 * then places the head a fixed MOVEMENT_SIZE farther in the chosen direction.
 	 */
+
 	public void draw() {
-		//FIXME
+		for (BodySegment segment : segments) {
+			segment.draw();
+		}
 	}
-	
-	/**
-	 * The snake attempts to eat the given food, growing if it does so successfully
-	 * @param f the food to be eaten
-	 * @return true if the snake successfully ate the food
-	 */
+
 	public boolean eatFood(Food f) {
-		//FIXME
+		BodySegment head = segments.getFirst();
+		double dist = Math.hypot(head.getX() - f.getX(), head.getY() - f.getY());
+		if (dist < SEGMENT_SIZE + Food.FOOD_SIZE) {
+			// Add new segment at tail's position
+			BodySegment tail = segments.getLast();
+			segments.add(new BodySegment(tail.getX(), tail.getY(), SEGMENT_SIZE));
+			return true;
+		}
+		
+		/*When the head‑to‑food distance is smaller than the two radii combined, 
+		 *the method adds a brand‑new BodySegment at the current tail position, 
+		 *lengthening the LinkedList<BodySegment> that represents the snake, 
+		 *and returns true to signal the bite.
+		 */
+		
 		return false;
 	}
-	
-	/**
-	 * Returns true if the head of the snake is in bounds
-	 * @return whether or not the head is in the bounds of the window
-	 */
+
 	public boolean isInbounds() {
-		//FIXME
-		return true;
+		BodySegment head = segments.getFirst();
+		double x = head.getX();
+		double y = head.getY();
+		return x >= 0 && x <= 1 && y >= 0 && y <= 1;
 	}
 }
